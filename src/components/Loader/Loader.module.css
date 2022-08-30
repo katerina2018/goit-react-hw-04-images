@@ -1,0 +1,20 @@
+.Loader {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 70px;
+  height: 70px;
+}
+.Loader svg {
+  animation: spinner 2s infinite linear;
+}
+
+@keyframes spinner {
+  0% {
+    stroke: rgb(8, 4, 247);
+  }
+  100% {
+    stroke: rgb(247, 4, 4);
+  }
+}
