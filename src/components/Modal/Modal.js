@@ -1,41 +1,42 @@
-import React, { Component } from 'react';
-import { createPortal } from 'react-dom';
+import  {  useEffect } from 'react';
 import PropTypes from 'prop-types';
 import s from './Modal.module.css';
 
-const modalRoot = document.querySelector('#modal-root');
 
-class Modal extends Component {
-  componentDidMount() {
-    window.addEventListener('keydown', this.handleKeyDown);
-  }
 
-  componentWillUnmount() {
-    window.removeEventListener('keydown', this.handleKeyDown);
-  }
+const Modal= ({handleModalToggle, children, image})=> {
 
-  handleKeyDown = event => {
+useEffect(() => {
+  const handleKeyDown = event => {
     if (event.code === 'Escape') {
-      this.props.handleModalToggle('');
+      handleModalToggle('');
     }
   };
-  handleBackDropClick = e => {
+  window.addEventListener('keydown', handleKeyDown);
+  return () => {  window.removeEventListener('keydown', handleKeyDown);};
+}, [handleModalToggle]);
+
+
+
+
+  const handleBackDropClick = e => {
     if (e.currentTarget === e.target) {
-      this.props.handleModalToggle('');
+      handleModalToggle('');
     }
   };
 
-  render() {
-    return createPortal(
-      <div className={s.modalBackdrop} onClick={this.handleBackDropClick}>
+
+    return (
+    
+      <div className={s.modalBackdrop} onClick={handleBackDropClick}>
         <div className={s.modalContent}>
-          {this.props.children}
-          <img src={this.props.image} alt="" />
+          {children}
+          <img src={image} alt="" />
         </div>
-      </div>,
-      modalRoot,
-    );
-  }
+      </div>
+     
+   )
+  
 }
 
 Modal.propTypes = {

@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import  { useState, useEffect } from 'react';
 
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -10,21 +10,20 @@ import TextButton from './components/TextButton';
 import Loader from './components/Loader';
 import Modal from './components/Modal';
 
-class App extends Component {
-  state = {
-    inputValue: '',
-    pictures: [],
-    page: 1,
-    isPending: false,
-    error: null,
-    isModalOpen: false,
-    modalImg: '',
-  };
+function App () {
+  const [inputValue, setInputValue] = useState('');
+  const [pictures, setPictures] = useState([]);
+  const [page, setPage] = useState(1);
+  const [isPending, setIsPending] = useState(false);
+  const [error, setError] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalImg, setModalImg] = useState('');
+  
 
-  componentDidUpdate() {
-    if (this.state.isPending) {
+  useEffect(() => {
+     if (isPending) {
       fetch(
-        `https://pixabay.com/api/?q=${this.state.inputValue}&page=${this.state.page}&key=24782387-235d5961f89ca8adc0055c0c3&image_type=photo&orientation=horizontal&per_page=12`,
+        `https://pixabay.com/api/?q=${inputValue}&page=${page}&key=24782387-235d5961f89ca8adc0055c0c3&image_type=photo&orientation=horizontal&per_page=12`,
       )
         .then(response => {
           if (response.ok) {
@@ -36,68 +35,74 @@ class App extends Component {
           if (pictures.totalHits === 0) {
             toast.error('no pictures found');
           }
-          this.setState(prevState => ({
-            pictures:
-              this.state.page > 1
-                ? [...prevState.pictures, ...pictures.hits]
-                : pictures.hits,
-            isPending: false,
-          }));
+          else if( page > 1) {setPictures(prevState=>[...prevState, ...pictures.hits])}
+           else{setPictures(pictures.hits)} 
+          
+          setIsPending(false)
+
+
         })
-        .catch(error => this.setState({ error: error, isPending: false }));
+        .catch(error => 
+          {setError(error)
+          setIsPending(false)}
+          );
     }
-  }
+  }, [inputValue, isPending, page]);
 
-  handleSetQuery = event => {
-    this.setState({ [event.target.name]: event.target.value });
+  
+
+  const handleSetQuery = event => {
+    setInputValue(event.target.value)
+   
   };
 
-  onLoadMorePages() {
-    this.setState(prevState => ({
-      isPending: true,
-      page: prevState.page + 1,
-    }));
+  const onLoadMorePages=()=> {
+    setIsPending(true)
+    setPage(prevState=> prevState + 1)
+    
   }
 
-  handleFormSubmit = event => {
+  const handleFormSubmit = event => {
     event.preventDefault();
-
-    this.setState({ isPending: true, page: 1, pictures: [] });
+    setIsPending(true);
+    setPage(1);
+    setPictures([]);
+   
   };
 
-  handleModalToggle = image => {
-    this.setState(prevState => ({
-      isModalOpen: !prevState.isModalOpen,
-      modalImg: image,
-    }));
+  const handleModalToggle = image => {
+    setIsModalOpen(state=>!state)
+    setModalImg(image)
+    
   };
 
-  render() {
-    const { error, pictures } = this.state;
+ 
 
     return (
       <div>
         <ToastContainer position="top-center" autoClose={3000} />
         {error && <h1>{error.message}</h1>}
         <Searchbar
-          handleFormSubmit={this.handleFormSubmit}
-          handleSetQuery={this.handleSetQuery}
-          inputValue={this.state.inputValue}
+          handleFormSubmit={handleFormSubmit}
+          handleSetQuery={handleSetQuery}
+          inputValue={inputValue}
         />
 
-        {this.state.isPending && this.state.page === 1 ? (
+        {isPending && page === 1 ? (
           <Loader />
         ) : pictures.length > 0 ? (
           <ImageGallery
             pictures={pictures}
-            handleModalToggle={this.handleModalToggle}
+            handleModalToggle={handleModalToggle}
           />
         ) : null}
 
-        {!(pictures.length > 0) ? null : !this.state.isPending ? (
+        {!(pictures.length > 0) ? null : !isPending ? (
           <TextButton
             onClick={() => {
-              this.onLoadMorePages(this);
+              onLoadMorePages();
+
+             
             }}
           >
             Load more
@@ -105,15 +110,14 @@ class App extends Component {
         ) : (
           <Loader />
         )}
-        {this.state.isModalOpen && (
+        {isModalOpen && (
           <Modal
-            handleModalToggle={this.handleModalToggle}
-            image={this.state.modalImg}
+            handleModalToggle={handleModalToggle}
+            image={modalImg}
           />
         )}
       </div>
     );
   }
-}
 
 export default App;
